@@ -4,13 +4,11 @@ using CollageManagementSystem.Models;
 using CollageManagementSystem.Services;
 using CollageManagementSystem.Services.Auth;
 using CollageMangmentSystem.Core.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CollageManagementSystem.Controllers
+namespace CollageMangmentSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

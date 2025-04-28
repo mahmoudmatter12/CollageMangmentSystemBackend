@@ -4,7 +4,6 @@ using CollageMangmentSystem.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
-using CollageMangmentSystem.Infrastructure.Services;
 using CollageManagementSystem.Services.Auth;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,6 +12,7 @@ using CollageManagementSystem.Services;
 using CollageManagementSystem.Middleware;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using CollageMangmentSystem.Core.Entities.department;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +22,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 // Add infrastructure services
-builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 builder.Services.AddTransient<AuthorizationMiddleware>(provider =>
@@ -118,19 +117,6 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
 
-// Configure CORS
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowWithCookies", builder =>
-//     {
-//         builder.WithOrigins(
-//                 "http://localhost:3000",
-//                 "https://yourproductiondomain.com")
-//             .AllowAnyHeader()
-//             .AllowAnyMethod()
-//             .AllowCredentials();
-//     });
-// });
 
 // Register application services
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -154,7 +140,6 @@ app.UseCookiePolicy(new CookiePolicyOptions
     HttpOnly = HttpOnlyPolicy.Always
 });
 
-// app.UseCors("AllowWithCookies");
 
 app.UseAuthentication();
 app.UseAuthorization();
