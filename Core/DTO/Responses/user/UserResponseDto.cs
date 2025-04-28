@@ -1,4 +1,5 @@
 using CollageMangmentSystem.Core.Entities;
+using CollageMangmentSystem.Core.Entities.user;
 
 namespace CollageMangmentSystem.Core.DTO.Responses
 {
@@ -9,7 +10,7 @@ namespace CollageMangmentSystem.Core.DTO.Responses
         public string? Lname { get; set; }
         public string Fullname { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public Role Role { get; set; }
+        public UserRole Role { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

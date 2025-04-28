@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using CollageMangmentSystem.Core.Entities.user;
 
 namespace CollageMangmentSystem.Core.Entities
 {
@@ -28,7 +29,7 @@ namespace CollageMangmentSystem.Core.Entities
         [MaxLength(255)] // For hashed password
         public string PasswordHash { get; set; } = string.Empty;
 
-        public Role Role { get; set; } = Role.Student; // Default to Student
+        public UserRole Role { get; set; } = UserRole.Student; // Default to Student
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -36,9 +37,9 @@ namespace CollageMangmentSystem.Core.Entities
         {
             return roleIndex switch
             {
-                0 => Role.Student.ToString(),
-                1 => Role.Teacher.ToString(),
-                2 => Role.Admin.ToString(),
+                0 => UserRole.Student.ToString(),
+                1 => UserRole.Teacher.ToString(),
+                2 => UserRole.Admin.ToString(),
                 _ => "Unknown"
             };
         }

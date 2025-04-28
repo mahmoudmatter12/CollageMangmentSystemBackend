@@ -136,3 +136,4 @@
 /home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.AspNetCore.JsonPatch.dll
 /home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Newtonsoft.Json.dll
 /home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/FluentValidation.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/obj/Debug/net9.0/CollageMangmentSystem.sourcelink.json
