@@ -9,7 +9,6 @@ namespace CollageMangmentSystem.Core.Interfaces
         Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);
         Task SaveChangesAsync();
-
         Task<IEnumerable<T>> GetAllAsyncPaged(int pageNumber, int pageSize, Func<IQueryable<T>, IQueryable<T>>? include = null);
     }
 }

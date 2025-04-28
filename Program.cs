@@ -5,70 +5,171 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using CollageMangmentSystem.Infrastructure.Services;
-
+using CollageManagementSystem.Services.Auth;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using CollageManagementSystem.Services;
+using CollageManagementSystem.Middleware;
+using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-// Add to your service collection
+
+// Add infrastructure services
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-// Register ApplicationDbContext with PostgreSQL provider
-// Connection string is read from appsettings.json under "Postgres" key
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
-
-// Register generic repository pattern (scoped lifetime)
+builder.Services.AddTransient<AuthorizationMiddleware>(provider =>
+{
+    var next = provider.GetRequiredService<RequestDelegate>();
+    return new AuthorizationMiddleware(next);
+});
+// Register repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+// Configure cookie policy
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = context => false;
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+});
+
+// Configure authentication cookies
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Name = "CollageAuth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.None
+        : CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    options.SlidingExpiration = true;
+    options.LoginPath = "/api/auth/login";
+    options.AccessDeniedPath = "/api/auth/access-denied";
+});
+
+// Configure rate limiting
 builder.Services.AddRateLimiter(options =>
 {
-    // Policy for general GET requests (strict limits)
     options.AddFixedWindowLimiter("FixedWindowPolicy", opt =>
     {
-        opt.Window = TimeSpan.FromSeconds(10); // 10-second time window
-        opt.PermitLimit = 5;                  // Max 5 requests per window
-        opt.QueueLimit = 0;                   // No queuing - immediate rejection
+        opt.Window = TimeSpan.FromSeconds(10);
+        opt.PermitLimit = 5;
+        opt.QueueLimit = 0;
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
     });
 
-    // Stricter policy for POST/PUT/DELETE operations
     options.AddFixedWindowLimiter("StrictPolicy", opt =>
     {
-        opt.Window = TimeSpan.FromMinutes(10); // 10-minute window  
-        opt.PermitLimit = 10;                  // Max 10 requests per window
-        opt.QueueLimit = 0;                    // Immediate rejection
+        opt.Window = TimeSpan.FromMinutes(10);
+        opt.PermitLimit = 10;
+        opt.QueueLimit = 0;
     });
 
-    // Custom handler when rate limit is exceeded
     options.OnRejected = (context, _) =>
     {
-        // Add Retry-After header (seconds remaining in window)
-        context.HttpContext.Response.Headers["Retry-After"] = 
-            (600 - DateTime.Now.Second % 600).ToString(); // 10 minutes in seconds
+        context.HttpContext.Response.Headers["Retry-After"] =
+            (600 - DateTime.Now.Second % 600).ToString();
         return new ValueTask();
     };
 
-    // Set HTTP 429 status code for rate-limited requests
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
+// Configure JWT authentication
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("SecretKey is not configured");
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            context.Token = context.Request.Cookies["accessToken"];
+            return Task.CompletedTask;
+        }
+    };
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+
+// Configure CORS
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowWithCookies", builder =>
+//     {
+//         builder.WithOrigins(
+//                 "http://localhost:3000",
+//                 "https://yourproductiondomain.com")
+//             .AllowAnyHeader()
+//             .AllowAnyMethod()
+//             .AllowCredentials();
+//     });
+// });
+
+// Register application services
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
-// Enable Swagger JSON endpoint
-app.UseSwagger();
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-// Enable Swagger UI (interactive documentation)
-app.UseSwaggerUI();
+app.UseHttpsRedirection();
 
-// Activate rate limiting middleware
-// MUST be placed before MapControllers()
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    MinimumSameSitePolicy = SameSiteMode.None,
+    Secure = CookieSecurePolicy.SameAsRequest,
+    HttpOnly = HttpOnlyPolicy.Always
+});
+
+// app.UseCors("AllowWithCookies");
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Use middleware with factory approach
+app.Use(async (context, next) =>
+{
+    var tokenService = context.RequestServices.GetRequiredService<ITokenService>();
+    var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
+
+    var middleware = new JwtAuthenticationMiddleware(next, configuration, tokenService);
+    await middleware.Invoke(context);
+});
+app.UseMiddleware<AuthorizationMiddleware>(); // Role-based authorization
 app.UseRateLimiter();
-
-// Map controller endpoints
-// Note: We don't apply global rate limiting here (use attributes per controller)
 app.MapControllers();
 
-// Start the application
 app.Run();

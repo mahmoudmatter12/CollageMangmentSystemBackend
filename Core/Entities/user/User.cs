@@ -11,14 +11,7 @@ namespace CollageMangmentSystem.Core.Entities
         public Guid Id { get; set; } = Guid.NewGuid(); // Auto-generated UUID
 
         [Required]
-        [MaxLength(100)]
-        public required string Fname { get; set; }
-
-        [MaxLength(100)]
-        public string? Lname { get; set; }
-
-        [NotMapped]
-        public string Fullname => $"{Fname}{(string.IsNullOrEmpty(Lname) ? "" : " " + Lname)}";
+        public string FullName { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
@@ -26,9 +19,14 @@ namespace CollageMangmentSystem.Core.Entities
         public required string Email { get; set; }
 
         [Required]
-        [MaxLength(255)] // For hashed password
-        public string PasswordHash { get; set; } = string.Empty;
+        public byte[] PasswordHash { get; set; } = Array.Empty<byte>();
 
+        [Required]
+        public byte[] PasswordSalt { get; set; } = Array.Empty<byte>();
+
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiry { get; set; }
+        
         public UserRole Role { get; set; } = UserRole.Student; // Default to Student
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -43,6 +41,8 @@ namespace CollageMangmentSystem.Core.Entities
                 _ => "Unknown"
             };
         }
+
+
     }
 
 

@@ -1,8 +1,13 @@
 // Controllers/UsersController.cs
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using CollageManagementSystem.Services;
 using CollageMangmentSystem.Core.DTO.Requests;
 using CollageMangmentSystem.Core.DTO.Responses;
 using CollageMangmentSystem.Core.Entities;
 using CollageMangmentSystem.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -13,13 +18,15 @@ public class UsersController : ControllerBase
     private readonly IRepository<User> _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ILogger<UsersController> _logger;
+    private readonly IUserService _userService;
 
     public UsersController(IRepository<User> userRepository, ILogger<UsersController> logger,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher, IUserService userService)
     {
         _userRepository = userRepository;
         _logger = logger;
         _passwordHasher = passwordHasher;
+        _userService = userService;
     }
 
     [HttpGet]
@@ -37,10 +44,10 @@ public class UsersController : ControllerBase
                 PageSize = pageSize,
                 TotalCount = totalUsers.Count(),
                 TotalPages = (int)Math.Ceiling((double)totalUsers.Count() / pageSize),
-                Items = users.Select(user => new GetUserIdResponseDto
+                Users = users.Select(user => new GetUserIdResponseDto
                 {
                     Id = user.Id,
-                    Fullname = user.Fullname,
+                    Fullname = user.FullName,
                     Email = user.Email,
                     Role = user.GetRoleByIndex((int)user.Role),
                     CreatedAt = user.CreatedAt
@@ -68,7 +75,7 @@ public class UsersController : ControllerBase
             return Ok(new GetUserIdResponseDto
             {
                 Id = user.Id,
-                Fullname = user.Fullname,
+                Fullname = user.FullName,
                 Email = user.Email,
                 Role = user.GetRoleByIndex((int)user.Role),
                 CreatedAt = user.CreatedAt
@@ -97,14 +104,15 @@ public class UsersController : ControllerBase
             if (existingUser != null)
                 return Conflict("Email already in use");
 
+            CreatePasswordHash(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
             var user = new User
             {
-                // Id auto-generated
-                Fname = userDto.Fname,
-                Lname = userDto.Lname,
                 Email = userDto.Email,
-                PasswordHash = _passwordHasher.HashPassword(userDto.Password),
-                // Role defaults to Student
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt,
+                FullName = userDto.FullName ?? string.Empty,
+
             };
 
             await _userRepository.AddAsync(user);
@@ -115,8 +123,6 @@ public class UsersController : ControllerBase
                 new
                 {
                     user.Id,
-                    user.Fname,
-                    user.Lname,
                     user.Email,
                     Role = user.GetRoleByIndex((int)user.Role),
                 });
@@ -142,8 +148,6 @@ public class UsersController : ControllerBase
                 return NotFound($"User with ID {id} not found");
 
             // Update only the fields that are provided
-            user.Fname = userDto.Fname ?? user.Fname;
-            user.Lname = userDto.Lname ?? user.Lname;
             user.Email = userDto.Email ?? user.Email;
 
             await _userRepository.UpdateAsync(user);
@@ -151,7 +155,7 @@ public class UsersController : ControllerBase
             return Ok(new GetUserIdResponseDto
             {
                 Id = user.Id,
-                Fullname = user.Fullname,
+                Fullname = user.FullName,
                 Email = user.Email,
                 Role = user.GetRoleByIndex((int)user.Role),
                 CreatedAt = user.CreatedAt
@@ -185,5 +189,31 @@ public class UsersController : ControllerBase
             _logger.LogError(ex, $"Error deleting user with ID {id}");
             return StatusCode(500, "Internal server error");
         }
+    }
+
+    [HttpGet("protected")]
+    public async Task<IActionResult> Protected()
+    {
+        var userId = GetUserIdFromClaims();
+        var UserRole = await _userService.GetRoleByUserId(userId);
+        return Ok(new { message = "This is a protected route", userId, UserRole });
+    }
+
+
+    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    {
+        using var hmac = new HMACSHA512();
+        passwordSalt = hmac.Key;
+        passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+    }
+
+    private Guid GetUserIdFromClaims()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("User ID not found in claims");
+        }
+        return userId;
     }
 }

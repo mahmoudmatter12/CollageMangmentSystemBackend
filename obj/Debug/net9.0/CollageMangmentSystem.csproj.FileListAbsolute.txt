@@ -137,3 +137,16 @@
 /home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Newtonsoft.Json.dll
 /home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/FluentValidation.dll
 /home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/obj/Debug/net9.0/CollageMangmentSystem.sourcelink.json
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.AspNetCore.Cryptography.Internal.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.Extensions.Identity.Core.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.Extensions.Identity.Stores.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.IdentityModel.Abstractions.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.IdentityModel.Logging.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.IdentityModel.Tokens.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
