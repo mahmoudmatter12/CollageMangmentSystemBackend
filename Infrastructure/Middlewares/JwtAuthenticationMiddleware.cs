@@ -49,7 +49,7 @@ namespace CollageManagementSystem.Middleware
             if (string.IsNullOrEmpty(token))
             {
                 context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Access token is missing");
+                await context.Response.WriteAsync("No token provided login first");
                 return;
             }
 
