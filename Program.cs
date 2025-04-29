@@ -12,7 +12,7 @@ using CollageManagementSystem.Services;
 using CollageManagementSystem.Middleware;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using CollageMangmentSystem.Core.Entities.department;
+using CollageMangmentSystem.Core.Interfaces.department;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +31,7 @@ builder.Services.AddTransient<AuthorizationMiddleware>(provider =>
 });
 // Register repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped(typeof(IDepRepostaory<>), typeof(DepRepostaory<>));
 
 // Configure cookie policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
