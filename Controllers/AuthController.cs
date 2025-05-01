@@ -48,6 +48,8 @@ namespace CollageMangmentSystem.Controllers
                 PasswordHash = passwordHash,
                 PasswordSalt = passwordSalt,
                 FullName = registerDto.FullName ?? string.Empty,
+                DepartmentId = registerDto.DepartmentId,
+                
             };
 
             // Save user

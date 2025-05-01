@@ -13,6 +13,8 @@ namespace CollageManagementSystem.Services
         Task CreateUser(User user);
         Task UpdateUser(User user);
         Task<Guid> GetUserIdFromClaims(ClaimsPrincipal userClaims);
+
+        Task<List<User>> GetUsersByDepartmentId(Guid departmentId);
         Task<string> GetRoleByUserId(Guid id);
     }
 }

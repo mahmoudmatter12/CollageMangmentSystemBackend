@@ -71,6 +71,13 @@ namespace CollageManagementSystem.Services
             }
         }
 
+        public async Task<List<User>> GetUsersByDepartmentId(Guid departmentId)
+        {
+            return await _context.Users
+                .Where(u => u.DepartmentId == departmentId)
+                .ToListAsync();
+        }
+
         // Helper method used by AuthController
         public void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {

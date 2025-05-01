@@ -1,5 +1,6 @@
 using CollageManagementSystem.Core.Entities.department;
 using CollageManagementSystem.Services;
+using CollageMangmentSystem.Core.DTO.Responses;
 using CollageMangmentSystem.Core.DTO.Responses.user;
 using CollageMangmentSystem.Core.Entities;
 using CollageMangmentSystem.Core.Entities.department;
@@ -19,7 +20,6 @@ namespace CollageMangmentSystem.Controllers
         private readonly IUserService _tokenService;
 
 
-
         public DepartmentController(IRepository<Department> userRepository, IUserService tokenService)
         {
             _tokenService = tokenService;
@@ -36,8 +36,8 @@ namespace CollageMangmentSystem.Controllers
             var departmentsDto = departments.Select(department => department.ToDepResponseDto()).ToList();
             foreach (var department in departmentsDto)
             {
-                var hddName = department.HDDID.HasValue 
-                    ? await _tokenService.GetUserById(department.HDDID.Value) 
+                var hddName = department.HDDID.HasValue
+                    ? await _tokenService.GetUserById(department.HDDID.Value)
                     : null;
                 department.HDDName = hddName?.FullName;
             }
@@ -130,6 +130,36 @@ namespace CollageMangmentSystem.Controllers
 
             await _DepartmentRepository.DeleteAsync(department);
             return Ok("Department deleted successfully");
+        }
+
+        [HttpGet("{id:guid}/users")]
+        [EnableRateLimiting("FixedWindowPolicy")]
+        public async Task<IActionResult> GetUsersByDepartmentId(Guid id)
+        {
+            var department = await _DepartmentRepository.GetByIdAsync(id);
+            if (department == null)
+            {
+                return NotFound("Department not found");
+            }
+
+            var users = await _tokenService.GetUsersByDepartmentId(id);
+            if (users == null || !users.Any())
+            {
+                return NotFound("No users found in this department");
+            }
+
+            var userDtos = users.Select(user => user.ToGetStudentIdResponseDto()).ToList();
+            var existingDepartment = new
+            {
+                Id = department.Id,
+                Name = department.Name,
+                HDDID = department.HDDID,
+            };
+            return Ok(new
+            {
+                Department = existingDepartment,
+                Users = userDtos
+            });
         }
 
     }

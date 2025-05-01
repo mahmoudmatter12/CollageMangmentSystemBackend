@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CollageMangmentSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CollageMangmentSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250501225016_realation_UserDepartmentv2")]
+    partial class realation_UserDepartmentv2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,6 +45,9 @@ namespace CollageMangmentSystem.Migrations
                         .HasColumnType("text");
 
                     b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DepartmentId1")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Email")
@@ -82,6 +88,8 @@ namespace CollageMangmentSystem.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
+
+                    b.HasIndex("DepartmentId1");
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -177,9 +185,6 @@ namespace CollageMangmentSystem.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("StudentCount")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -196,10 +201,14 @@ namespace CollageMangmentSystem.Migrations
             modelBuilder.Entity("CollageMangmentSystem.Core.Entities.User", b =>
                 {
                     b.HasOne("CollageMangmentSystem.Core.Entities.department.Department", "Department")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("CollageMangmentSystem.Core.Entities.department.Department", null)
+                        .WithMany("Students")
+                        .HasForeignKey("DepartmentId1");
 
                     b.Navigation("Department");
                 });
@@ -231,6 +240,13 @@ namespace CollageMangmentSystem.Migrations
             modelBuilder.Entity("CollageMangmentSystem.Core.Entities.course.Course", b =>
                 {
                     b.Navigation("PrerequisiteCourses");
+                });
+
+            modelBuilder.Entity("CollageMangmentSystem.Core.Entities.department.Department", b =>
+                {
+                    b.Navigation("Students");
+
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

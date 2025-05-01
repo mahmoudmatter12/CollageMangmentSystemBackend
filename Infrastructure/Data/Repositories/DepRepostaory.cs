@@ -92,7 +92,8 @@ namespace CollageMangmentSystem.Infrastructure.Data.Repositories
             return await _context.Set<Department>().CountAsync();
         }
 
-        public async Task<string> GetDepartmentHDDName(Guid id){
+        public async Task<string> GetDepartmentHDDName(Guid id)
+        {
             var user = await _userService.GetUserById(id);
             return user?.FullName ?? string.Empty;
         }

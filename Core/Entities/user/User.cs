@@ -37,19 +37,26 @@ namespace CollageMangmentSystem.Core.Entities
             };
         }
 
+        // each user user can be in only one department
+        public required Guid DepartmentId { get; set; }
+        public Department? Department { get; set; }
 
-        public GetUserIdResponseDto ToGetStudentIdResponseDto()
+        public GetUserIdResponseDto ToGetStudentIdResponseDto() => new()
         {
-            return new GetUserIdResponseDto
-            {
-                Id = this.Id,
-                Fullname = this.FullName,
-                Email = this.Email,
-                Role = this.GetRoleByIndex((int)this.Role),
-                CreatedAt = this.CreatedAt
-            };
-        }
+            Id = Id,
+            Fullname = FullName,
+            Email = Email,
+            Role = Role.ToString(),
+            CreatedAt = CreatedAt,
+            DepId = DepartmentId,
+            DepName = Department?.Name
+        };
 
+
+        public string getName()
+        {
+            return this.FullName;
+        }
 
     }
 

@@ -4,6 +4,7 @@ using CollageManagementSystem.Services;
 using CollageMangmentSystem.Core.DTO.Responses;
 using CollageMangmentSystem.Core.DTO.Responses.user;
 using CollageMangmentSystem.Core.Entities;
+using CollageMangmentSystem.Core.Entities.department;
 using CollageMangmentSystem.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -18,8 +19,11 @@ namespace CollageMangmentSystem.Controllers
         private readonly ILogger<UsersController> _logger;
         private readonly IUserService _userService;
 
-        public UsersController(IRepository<User> userRepository, ILogger<UsersController> logger, IUserService userService)
+        private readonly IRepository<Department> _dep;
+
+        public UsersController(IRepository<User> userRepository, ILogger<UsersController> logger, IUserService userService , IRepository<Department> dep)
         {
+            _dep = dep;
             _userRepository = userRepository;
             _logger = logger;
             _userService = userService;
@@ -34,6 +38,10 @@ namespace CollageMangmentSystem.Controllers
                 var users = await _userRepository.GetAllAsyncPaged(pageNumber, pageSize);
                 var totalUsers = await _userRepository.GetAllAsync();
                 var usersDto = users.Select(user => user.ToGetStudentIdResponseDto()).ToList();
+                foreach (var user in usersDto)
+                {
+                    user.DepName = GetDepNameFromId(user.DepId);
+                }
                 return Ok(new PagedResponse<GetUserIdResponseDto>
                 {
                     PageNumber = pageNumber,
@@ -58,15 +66,10 @@ namespace CollageMangmentSystem.Controllers
                 var user = await _userRepository.GetByIdAsync(id);
                 if (user == null)
                     return NotFound();
-
-                return Ok(new GetUserIdResponseDto
-                {
-                    Id = user.Id,
-                    Fullname = user.FullName,
-                    Email = user.Email,
-                    Role = user.GetRoleByIndex((int)user.Role),
-                    CreatedAt = user.CreatedAt
-                });
+                var userDto = user.ToGetStudentIdResponseDto();
+                userDto.DepName = GetDepNameFromId(user.DepartmentId);
+                return Ok(userDto);
+                
             }
             catch (Exception ex)
             {
@@ -118,6 +121,14 @@ namespace CollageMangmentSystem.Controllers
                 throw new UnauthorizedAccessException("User ID not found in claims");
             }
             return userId;
+        }
+
+        private string GetDepNameFromId(Guid id){
+            var dep = _dep.GetByIdAsync(id).Result;
+            if (dep == null)
+                return "Department not found";
+            else
+                return dep.Name ?? "Department not found";
         }
     }
 }

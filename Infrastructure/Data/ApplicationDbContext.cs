@@ -28,6 +28,14 @@ namespace CollageMangmentSystem.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Configure Department-HDD relationship
+            modelBuilder.Entity<Department>()
+                .HasOne(d => d.HDD)
+                .WithMany()
+                .HasForeignKey(d => d.HDDID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
             // Configure unique email index
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)

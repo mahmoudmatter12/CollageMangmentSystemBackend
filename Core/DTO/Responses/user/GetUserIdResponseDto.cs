@@ -9,5 +9,8 @@ namespace CollageMangmentSystem.Core.DTO.Responses
         public string? Email { get; set; } = string.Empty;
         public required string? Role { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        public Guid DepId { get; set; }
+        public string? DepName { get; set; }
     }
 }
