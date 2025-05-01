@@ -1,41 +1,38 @@
-using CollageManagementSystem.Services;
-using CollageMangmentSystem.Core.Entities.department;
+using CollageMangmentSystem.Core.Entities.course;
 using CollageMangmentSystem.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CollageMangmentSystem.Infrastructure.Data.Repositories
 {
-    public class DepRepostaory<T> : IDepRepostaory<T> where T : class
+    public class CourseReposatory<T> : ICourseReposatory<T> where T : class
 
     {
         protected readonly ApplicationDbContext _context;
-        private readonly IUserService _userService;
-        public DepRepostaory(ApplicationDbContext context, IUserService userService)
+        public CourseReposatory(ApplicationDbContext context)
         {
             _context = context;
-            _userService = userService;
         }
 
-        public async Task AddAsync(Department entity)
+        public async Task AddAsync(Course entity)
         {
-            await _context.Set<Department>().AddAsync(entity);
+            await _context.Set<Course>().AddAsync(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Department entity)
+        public async Task DeleteAsync(Course entity)
         {
-            _context.Set<Department>().Remove(entity);
+            _context.Set<Course>().Remove(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Department>> GetAllAsync()
+        public async Task<IEnumerable<Course>> GetAllAsync()
         {
-            return await _context.Set<Department>().ToListAsync();
+            return await _context.Set<Course>().ToListAsync();
         }
 
-        public async Task<IEnumerable<Department>> GetAllAsyncPaged(int pageNumber, int pageSize, Func<IQueryable<Department>, IQueryable<Department>>? include = null)
+        public async Task<IEnumerable<Course>> GetAllAsyncPaged(int pageNumber, int pageSize, Func<IQueryable<Course>, IQueryable<Course>>? include = null)
         {
-            var query = _context.Set<Department>().AsQueryable();
+            var query = _context.Set<Course>().AsQueryable();
 
             if (include != null)
             {
@@ -45,15 +42,9 @@ namespace CollageMangmentSystem.Infrastructure.Data.Repositories
             return await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
         }
 
-        public async Task<Department?> GetByIdAsync(Guid id)
+        public async Task<Course?> GetByIdAsync(Guid id)
         {
-            return await _context.Set<Department>().FindAsync(id);
-        }
-
-        public async Task<string> GetDepartmentName(Guid? departmentId)
-        {
-            var department = await _context.Departments.FindAsync(departmentId);
-            return department != null ? department.Name : string.Empty;
+            return await _context.Set<Course>().FindAsync(id);
         }
 
         public async Task SaveChangesAsync()
@@ -61,13 +52,18 @@ namespace CollageMangmentSystem.Infrastructure.Data.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Department entity)
+        public async Task UpdateAsync(Course entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
 
-        public async Task SoftDeleteAsync(Department entity, Guid deletedById)
+        public async Task<int> GetCountAsync()
+        {
+            return await _context.Set<Course>().CountAsync();
+        }
+
+        public async Task SoftDeleteAsync(Course entity, Guid deletedById)
         {
             // Assuming T has a property called IsDeleted
             var property = typeof(T).GetProperty("IsDeleted");
@@ -87,15 +83,14 @@ namespace CollageMangmentSystem.Infrastructure.Data.Repositories
             }
         }
 
-        public async Task<int> GetCountAsync()
+        public Task<List<string>> GetCourseNamesByIds(List<Guid> courseIds)
         {
-            return await _context.Set<Department>().CountAsync();
-        }
+            var courseNames = _context.Courses
+                .Where(c => courseIds.Contains(c.Id))
+                .Select(c => c.Name)
+                .ToListAsync();
 
-        public async Task<string> GetDepartmentHDDName(Guid id){
-            var user = await _userService.GetUserById(id);
-            return user?.FullName ?? string.Empty;
+            return courseNames;
         }
-
     }
 }

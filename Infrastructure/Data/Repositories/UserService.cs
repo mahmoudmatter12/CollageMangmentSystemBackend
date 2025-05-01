@@ -2,6 +2,7 @@ using CollageManagementSystem.Models;
 using CollageMangmentSystem.Core.Entities;
 using CollageMangmentSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -29,14 +30,14 @@ namespace CollageManagementSystem.Services
         }
 
         public async Task<User> GetUserById(Guid id)
-        { 
+        {
             return await _context.Users.FindAsync(id) ?? throw new Exception($"User with id {id} not found."); ;
         }
 
         public async Task<User> GetUserByRefreshToken(string refreshToken)
         {
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken) 
+                .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken)
                 ?? throw new Exception($"User with refresh token {refreshToken} not found.");
         }
 
@@ -89,7 +90,7 @@ namespace CollageManagementSystem.Services
 
             using var hmac = new HMACSHA512(storedSalt);
             var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            
+
             for (int i = 0; i < computedHash.Length; i++)
             {
                 if (computedHash[i] != storedHash[i])
@@ -97,7 +98,7 @@ namespace CollageManagementSystem.Services
                     return false;
                 }
             }
-            
+
             return true;
         }
 
@@ -109,6 +110,15 @@ namespace CollageManagementSystem.Services
                 throw new Exception($"User with id {id} not found.");
             }
             return user.GetRoleByIndex((int)user.Role);
+        }
+        public Task<Guid> GetUserIdFromClaims(ClaimsPrincipal userClaims)
+        {
+            var userIdClaim = userClaims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                throw new UnauthorizedAccessException("User ID not found in claims");
+            }
+            return Task.FromResult(userId);
         }
     }
 }

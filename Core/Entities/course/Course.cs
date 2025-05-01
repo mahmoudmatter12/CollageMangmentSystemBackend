@@ -1,11 +1,11 @@
+using CollageMangmentSystem.Core.DTO.Responses.course;
 using CollageMangmentSystem.Core.Entities.department;
 using System.ComponentModel.DataAnnotations;
 
 namespace CollageMangmentSystem.Core.Entities.course
 {
-    public class Course
+    public class Course : BaseEntity
     {
-        public Guid Id { get; init; } = Guid.NewGuid();
 
         [Required]
         [StringLength(100)]
@@ -35,6 +35,24 @@ namespace CollageMangmentSystem.Core.Entities.course
         {
             // Replace this with the actual logic to fetch the department name
             return dep.Name ?? string.Empty;
+        }
+
+        public courseResponseDto ToCourseResponseDto()
+        {
+            // Assuming you want to convert this Course entity to a courseResponseDto
+            var courseResponseDto = new courseResponseDto
+            {
+                Id = this.Id,
+                Name = this.Name,
+                CreditHours = this.CreditHours,
+                Semester = this.Semester,
+                IsOpen = this.IsOpen,
+                DepartmentId = this.DepartmentId,
+                DepName = this.Department?.Name,
+                PrerequisiteCourseIds = this.PrerequisiteCourseIds,
+
+            };
+            return courseResponseDto;
         }
     }
 }

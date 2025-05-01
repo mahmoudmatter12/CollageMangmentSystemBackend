@@ -45,7 +45,7 @@ public class AuthorizationMiddleware
         }
         catch (UnauthorizedAccessException ex)
         {
-            context.Response.StatusCode = 401; // Unauthorized
+            context.Response.StatusCode = 401;
             await context.Response.WriteAsync(ex.Message);
         }
         catch (Exception ex)

@@ -4,7 +4,7 @@ namespace CollageManagementSystem.Core.Entities.department
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; } = string.Empty;
-        public string? HDDID { get; set; }
+        public Guid? HDDID { get; set; }
         public string? HDDName { get; set; }
     }
 }

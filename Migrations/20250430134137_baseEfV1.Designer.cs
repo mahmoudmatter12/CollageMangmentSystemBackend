@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CollageMangmentSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CollageMangmentSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250430134137_baseEfV1")]
+    partial class baseEfV1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,7 +165,10 @@ namespace CollageMangmentSystem.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("HDDID")
+                    b.Property<string>("HDDID")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("HDDId")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsDeleted")
@@ -172,9 +178,6 @@ namespace CollageMangmentSystem.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("StudentCount")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -183,7 +186,7 @@ namespace CollageMangmentSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HDDID");
+                    b.HasIndex("HDDId");
 
                     b.ToTable("Departments");
                 });
@@ -205,9 +208,7 @@ namespace CollageMangmentSystem.Migrations
                 {
                     b.HasOne("CollageMangmentSystem.Core.Entities.User", "HDD")
                         .WithMany()
-                        .HasForeignKey("HDDID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("HDDId");
 
                     b.Navigation("HDD");
                 });

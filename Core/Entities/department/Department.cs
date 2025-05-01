@@ -1,55 +1,23 @@
+using CollageManagementSystem.Core.Entities.department;
+
 namespace CollageMangmentSystem.Core.Entities.department
 {
-    public class Department
+    public class Department : BaseEntity
     {
-        private static int StudentCount { get; set; }
-        public Department()
-        {
-            StudentCount++;
-        }
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public int StudentCount { get; set; }
         public string Name { get; set; } = string.Empty;
 
-        // foreign key
-        public string? HDDID { get; set; }
+        public required Guid HDDID { get; set; }
         public User? HDD { get; set; }
 
-
-        public String GetDepartmentHDDName()
+        public DepResponseDto ToDepResponseDto()
         {
-            return HDD?.FullName ?? string.Empty;
-        }
-
-        public void AddNewStudent()
-        {
-            StudentCount++;
-        }
-        public void RemoveStudent()
-        {
-            if (StudentCount > 0)
+            return new DepResponseDto
             {
-                StudentCount--;
-            }
-        }
-
-        public int GetStudentCount()
-        {
-            return StudentCount;
-        }
-
-        public void setStudentCount(int count)
-        {
-            if (count >= 0)
-            {
-                StudentCount = count;
-            }
-        }
-
-        // deconstructor
-        // this deiconstructor will be called when the object is destroyed
-        ~Department()
-        {
-            StudentCount--;
+                Id = this.Id,
+                Name = this.Name,
+                HDDID = this.HDDID,
+            };
         }
 
     }

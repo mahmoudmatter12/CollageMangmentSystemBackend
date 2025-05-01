@@ -10,5 +10,8 @@ namespace CollageMangmentSystem.Core.Interfaces
         Task DeleteAsync(T entity);
         Task SaveChangesAsync();
         Task<IEnumerable<T>> GetAllAsyncPaged(int pageNumber, int pageSize, Func<IQueryable<T>, IQueryable<T>>? include = null);
+        Task SoftDeleteAsync(T entity , Guid deletedById);
+
+        Task<int> GetCountAsync();
     }
 }

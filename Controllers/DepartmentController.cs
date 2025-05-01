@@ -1,5 +1,6 @@
 using CollageManagementSystem.Core.Entities.department;
 using CollageManagementSystem.Services;
+using CollageMangmentSystem.Core.DTO.Responses.user;
 using CollageMangmentSystem.Core.Entities;
 using CollageMangmentSystem.Core.Entities.department;
 using CollageMangmentSystem.Core.Interfaces;
@@ -18,6 +19,7 @@ namespace CollageMangmentSystem.Controllers
         private readonly IUserService _tokenService;
 
 
+
         public DepartmentController(IRepository<Department> userRepository, IUserService tokenService)
         {
             _tokenService = tokenService;
@@ -27,18 +29,25 @@ namespace CollageMangmentSystem.Controllers
 
         [HttpGet("all")]
         [EnableRateLimiting("FixedWindowPolicy")]
-        public async Task<IActionResult> GetAllDepartments()
+        public async Task<IActionResult> GetAllDepartments(int pageNumber = 1, int pageSize = 10)
         {
-            var departments = await _DepartmentRepository.GetAllAsync();
-            return Ok(new
+            var departments = await _DepartmentRepository.GetAllAsyncPaged(pageNumber, pageSize);
+            var totalDeps = await _DepartmentRepository.GetCountAsync();
+            var departmentsDto = departments.Select(department => department.ToDepResponseDto()).ToList();
+            foreach (var department in departmentsDto)
             {
-                Departments = departments.Select(department => new DepResponseDto
-                {
-                    Id = department.Id,
-                    Name = department.Name,
-                    HDDID = department.HDDID,
-                    HDDName = department.GetDepartmentHDDName()
-                })
+                var hddName = department.HDDID.HasValue 
+                    ? await _tokenService.GetUserById(department.HDDID.Value) 
+                    : null;
+                department.HDDName = hddName?.FullName;
+            }
+            return Ok(new PagedResponse<DepResponseDto>
+            {
+                Data = departmentsDto,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalDeps,
+                TotalPages = (int)Math.Ceiling((double)totalDeps / pageSize)
             });
         }
 
@@ -51,16 +60,17 @@ namespace CollageMangmentSystem.Controllers
             {
                 return NotFound("Department not found");
             }
+            var hddName = await _tokenService.GetUserById(department.HDDID);
             return Ok(new DepResponseDto
             {
                 Id = department.Id,
                 Name = department.Name,
                 HDDID = department.HDDID,
-                HDDName = department.GetDepartmentHDDName()
+                HDDName = hddName?.FullName,
             });
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateDepartment([FromBody] CreateDepRequestDto department)
         {
             if (department == null)
@@ -72,8 +82,13 @@ namespace CollageMangmentSystem.Controllers
             {
                 Name = department.Name,
                 HDDID = department.HDDID,
-                HDD = await GetUserById(department.HDDID),
             };
+
+            var hdd = await _tokenService.GetUserById(department.HDDID);
+            if (hdd == null)
+            {
+                return NotFound("HDD not found");
+            }
 
             await _DepartmentRepository.AddAsync(
                 newDepartment
@@ -101,7 +116,6 @@ namespace CollageMangmentSystem.Controllers
                 Id = existingDepartment.Id,
                 Name = existingDepartment.Name,
                 HDDID = existingDepartment.HDDID,
-                HDDName = existingDepartment.GetDepartmentHDDName()
             });
         }
 
@@ -118,15 +132,6 @@ namespace CollageMangmentSystem.Controllers
             return Ok("Department deleted successfully");
         }
 
-        private async Task<User?> GetUserById(string? hddId)
-        {
-            if (hddId == null)
-            {
-                return null;
-            }
-            var user = await _tokenService.GetUserById(Guid.Parse(hddId));
-            return user;
-        }
     }
 
 }

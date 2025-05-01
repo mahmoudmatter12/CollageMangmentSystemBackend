@@ -12,7 +12,7 @@ using CollageManagementSystem.Services;
 using CollageManagementSystem.Middleware;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using CollageMangmentSystem.Core.Interfaces.department;
+using CollageMangmentSystem.Core.Entities.course;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-
+builder.Services.AddHttpContextAccessor();
 // Add infrastructure services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
@@ -32,6 +32,7 @@ builder.Services.AddTransient<AuthorizationMiddleware>(provider =>
 // Register repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IDepRepostaory<>), typeof(DepRepostaory<>));
+builder.Services.AddScoped(typeof(ICourseReposatory<>), typeof(CourseReposatory<>));
 
 // Configure cookie policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -141,6 +142,7 @@ app.UseCookiePolicy(new CookiePolicyOptions
     HttpOnly = HttpOnlyPolicy.Always
 });
 
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

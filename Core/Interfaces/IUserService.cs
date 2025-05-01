@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using CollageManagementSystem.Models;
 using CollageMangmentSystem.Core.Entities;
 
@@ -11,7 +12,7 @@ namespace CollageManagementSystem.Services
         Task<User> GetUserByRefreshToken(string refreshToken);
         Task CreateUser(User user);
         Task UpdateUser(User user);
-
+        Task<Guid> GetUserIdFromClaims(ClaimsPrincipal userClaims);
         Task<string> GetRoleByUserId(Guid id);
     }
 }

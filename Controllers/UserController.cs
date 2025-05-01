@@ -1,13 +1,10 @@
 // Controllers/UsersController.cs
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using CollageManagementSystem.Services;
-using CollageMangmentSystem.Core.DTO.Requests;
 using CollageMangmentSystem.Core.DTO.Responses;
+using CollageMangmentSystem.Core.DTO.Responses.user;
 using CollageMangmentSystem.Core.Entities;
 using CollageMangmentSystem.Core.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -21,15 +18,14 @@ namespace CollageMangmentSystem.Controllers
         private readonly ILogger<UsersController> _logger;
         private readonly IUserService _userService;
 
-        public UsersController(IRepository<User> userRepository, ILogger<UsersController> logger,
-            IPasswordHasher passwordHasher, IUserService userService)
+        public UsersController(IRepository<User> userRepository, ILogger<UsersController> logger, IUserService userService)
         {
             _userRepository = userRepository;
             _logger = logger;
             _userService = userService;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         [EnableRateLimiting("FixedWindowPolicy")]
         public async Task<IActionResult> GetAllUsersPaged(int pageNumber = 1, int pageSize = 10)
         {
@@ -37,24 +33,15 @@ namespace CollageMangmentSystem.Controllers
             {
                 var users = await _userRepository.GetAllAsyncPaged(pageNumber, pageSize);
                 var totalUsers = await _userRepository.GetAllAsync();
-
-                var response = new PagedResponse<User>
+                var usersDto = users.Select(user => user.ToGetStudentIdResponseDto()).ToList();
+                return Ok(new PagedResponse<GetUserIdResponseDto>
                 {
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalCount = totalUsers.Count(),
                     TotalPages = (int)Math.Ceiling((double)totalUsers.Count() / pageSize),
-                    Users = users.Select(user => new GetUserIdResponseDto
-                    {
-                        Id = user.Id,
-                        Fullname = user.FullName,
-                        Email = user.Email,
-                        Role = user.GetRoleByIndex((int)user.Role),
-                        CreatedAt = user.CreatedAt
-                    }).ToList()
-                };
-
-                return Ok(response);
+                    Data = usersDto
+                });
             }
             catch (Exception ex)
             {
@@ -89,85 +76,6 @@ namespace CollageMangmentSystem.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] AddUserDto userDto)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                // Check if email already exists
-                var existingUser = (await _userRepository.GetAllAsync())
-                    .FirstOrDefault(u => u.Email == userDto.Email);
-
-                if (existingUser != null)
-                    return Conflict("Email already in use");
-
-                CreatePasswordHash(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-                var user = new User
-                {
-                    Email = userDto.Email,
-                    PasswordHash = passwordHash,
-                    PasswordSalt = passwordSalt,
-                    FullName = userDto.FullName ?? string.Empty,
-
-                };
-
-                await _userRepository.AddAsync(user);
-
-                return CreatedAtAction(
-                    nameof(GetUserById),
-                    new { id = user.Id },
-                    new
-                    {
-                        user.Id,
-                        user.Email,
-                        Role = user.GetRoleByIndex((int)user.Role),
-                    });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating user");
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        [HttpPatch("{id:guid}")]
-        [EnableRateLimiting("FixedWindowPolicy")]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto userDto)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                var user = await _userRepository.GetByIdAsync(id);
-                if (user == null)
-                    return NotFound($"User with ID {id} not found");
-
-                // Update only the fields that are provided
-                user.Email = userDto.Email ?? user.Email;
-
-                await _userRepository.UpdateAsync(user);
-
-                return Ok(new GetUserIdResponseDto
-                {
-                    Id = user.Id,
-                    Fullname = user.FullName,
-                    Email = user.Email,
-                    Role = user.GetRoleByIndex((int)user.Role),
-                    CreatedAt = user.CreatedAt
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error updating user with ID {id}");
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
 
         [HttpDelete("{id:guid}")]
         [EnableRateLimiting("FixedWindowPolicy")]
@@ -191,6 +99,8 @@ namespace CollageMangmentSystem.Controllers
             }
         }
 
+
+
         [HttpGet("protected")]
         public async Task<IActionResult> Protected()
         {
@@ -199,13 +109,6 @@ namespace CollageMangmentSystem.Controllers
             return Ok(new { message = "This is a protected route", userId, UserRole });
         }
 
-
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using var hmac = new HMACSHA512();
-            passwordSalt = hmac.Key;
-            passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-        }
 
         private Guid GetUserIdFromClaims()
         {

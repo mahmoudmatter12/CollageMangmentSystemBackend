@@ -1,6 +1,6 @@
 // Infrastructure/Data/Repositories/Repository.cs
 using CollageMangmentSystem.Core.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; // Required for ToListAsync and other EF Core async methods
 
 namespace CollageMangmentSystem.Infrastructure.Data.Repositories;
 public class Repository<T> : IRepository<T> where T : class
@@ -27,13 +27,13 @@ public class Repository<T> : IRepository<T> where T : class
     public async Task UpdateAsync(T entity)
     {
         _context.Entry(entity).State = EntityState.Modified;
-        await _context.SaveChangesAsync(); 
+        await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(T entity)
     {
         _context.Set<T>().Remove(entity);
-        await _context.SaveChangesAsync(); 
+        await _context.SaveChangesAsync();
     }
 
     public async Task SaveChangesAsync()
@@ -53,4 +53,28 @@ public class Repository<T> : IRepository<T> where T : class
         return await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
+    public async Task<int> GetCountAsync()
+    {
+        return await _context.Set<T>().CountAsync();
+    }
+
+    public async Task SoftDeleteAsync(T entity , Guid deletedById)
+    {
+        // Assuming T has a property called IsDeleted
+        var property = typeof(T).GetProperty("IsDeleted");
+        var deletedByProperty = typeof(T).GetProperty("DeletedBy");
+        var deletedAt = typeof(T).GetProperty("DeletedAt");
+        if (property != null && deletedByProperty != null && deletedAt != null)
+        {
+            deletedAt.SetValue(entity, DateTime.UtcNow);
+            property.SetValue(entity, true);
+            deletedByProperty.SetValue(entity, deletedById.ToString());
+            await UpdateAsync(entity);
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new Exception("Soft delete properties not found");
+        }
+    }
 }

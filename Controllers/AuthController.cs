@@ -4,6 +4,7 @@ using CollageManagementSystem.Models;
 using CollageManagementSystem.Services;
 using CollageManagementSystem.Services.Auth;
 using CollageMangmentSystem.Core.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Text;
@@ -69,7 +70,7 @@ namespace CollageMangmentSystem.Controllers
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 Role = user.GetRoleByIndex((int)user.Role),
-                AccessTokenExpiry = DateTime.UtcNow.AddMinutes(15),
+                AccessTokenExpiry = DateTime.UtcNow.AddHours(1),
             });
         }
 
@@ -179,7 +180,7 @@ namespace CollageMangmentSystem.Controllers
             return Ok(new { Message = "Logged out successfully" });
         }
 
-        
+
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
@@ -253,7 +254,7 @@ namespace CollageMangmentSystem.Controllers
             return userId;
         }
 
-        
+
 
 
 
