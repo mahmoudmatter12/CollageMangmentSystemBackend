@@ -6,6 +6,7 @@ namespace CollageMangmentSystem.Core.Interfaces
     {
         // fun that take a list of course ids and return a list of course names
         Task<List<string>> GetCourseNamesByIds(List<Guid> courseIds);
+        Task<string> GetCourseNameById(Guid courseId);
 
     }
 }

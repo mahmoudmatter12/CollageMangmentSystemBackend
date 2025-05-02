@@ -128,5 +128,15 @@ namespace CollageManagementSystem.Services
             }
             return Task.FromResult(userId);
         }
+
+        public async Task<string> GetUserNameById(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                throw new Exception($"User with id {id} not found.");
+            }
+            return user.FullName;
+        }
     }
 }

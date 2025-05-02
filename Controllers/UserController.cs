@@ -5,6 +5,7 @@ using CollageManagementSystem.Services;
 using CollageMangmentSystem.Core.DTO.Responses;
 using CollageMangmentSystem.Core.DTO.Responses.user;
 using CollageMangmentSystem.Core.Entities;
+using CollageMangmentSystem.Core.Entities.course;
 using CollageMangmentSystem.Core.Entities.department;
 using CollageMangmentSystem.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -22,15 +23,18 @@ namespace CollageMangmentSystem.Controllers
 
         private readonly IRepository<Department> _dep;
 
+        private readonly ICourseReposatory<Course> _courseReposatory;
+
         private readonly IUserEnrollments<UserEnrollments> _userEnrollmentsService;
 
-        public UsersController(IRepository<User> userRepository, ILogger<UsersController> logger, IUserService userService , IRepository<Department> dep ,IUserEnrollments<UserEnrollments> userEnrollmentsService)
+        public UsersController(IRepository<User> userRepository, ILogger<UsersController> logger, IUserService userService , IRepository<Department> dep ,IUserEnrollments<UserEnrollments> userEnrollmentsService , ICourseReposatory<Course> courseReposatory)
         {
             _userRepository = userRepository;
             _logger = logger;
             _userService = userService;
             _dep = dep;
             _userEnrollmentsService = userEnrollmentsService;
+            _courseReposatory = courseReposatory;
         }
        
 
@@ -93,8 +97,17 @@ namespace CollageMangmentSystem.Controllers
                 if (user == null)
                     return NotFound($"User with ID {id} not found");
 
-                var enrollments = await _userEnrollmentsService.GetUserEnrollmentById(id);
-                return Ok(enrollments);
+                var enrollments = await _userEnrollmentsService.GetUserEnrollmentsById(id);
+                return Ok(new {
+                    UserId = id,
+                    UserName = user.FullName,
+                    Enrollments = enrollments.Select(e => new
+                    {
+                        e.Id,
+                        e.CourseId,
+                        CourseName = GetCourseName(e.CourseId),
+                    }).ToList()
+                });
             }
             catch (Exception ex)
             {
@@ -155,5 +168,17 @@ namespace CollageMangmentSystem.Controllers
             else
                 return dep.Name ?? "Department not found";
         }
+
+                private string GetCourseName(Guid courseId)
+        {
+
+            var courseName = _courseReposatory.GetCourseNameById(courseId);
+            if (courseName == null)
+            {
+                throw new Exception("Course not found");
+            }
+            return courseName.Result;
+        }
+
     }
 }

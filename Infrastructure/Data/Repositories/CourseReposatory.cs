@@ -92,5 +92,15 @@ namespace CollageMangmentSystem.Infrastructure.Data.Repositories
 
             return courseNames;
         }
+
+        public async Task<string> GetCourseNameById(Guid courseId)
+        {
+            var courseName = await _context.Courses
+                .Where(c => c.Id == courseId)
+                .Select(c => c.Name)
+                .FirstOrDefaultAsync();
+
+            return courseName ?? string.Empty;
+        }
     }
 }
