@@ -5,6 +5,7 @@ using CollageMangmentSystem.Core.Entities;
 using CollageMangmentSystem.Core.Entities.course;
 using CollageMangmentSystem.Core.Entities.department;
 using System.Linq.Expressions;
+using CollageManagementSystem.Core.Entities.userEnrollments;
 
 namespace CollageMangmentSystem.Infrastructure.Data
 {
@@ -23,6 +24,8 @@ namespace CollageMangmentSystem.Infrastructure.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Course> Courses { get; set; }
+
+        public DbSet<UserEnrollments> UserEnrollments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

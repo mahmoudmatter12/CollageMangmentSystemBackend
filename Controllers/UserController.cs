@@ -1,5 +1,6 @@
 // Controllers/UsersController.cs
 using System.Security.Claims;
+using CollageManagementSystem.Core.Entities.userEnrollments;
 using CollageManagementSystem.Services;
 using CollageMangmentSystem.Core.DTO.Responses;
 using CollageMangmentSystem.Core.DTO.Responses.user;
@@ -21,13 +22,17 @@ namespace CollageMangmentSystem.Controllers
 
         private readonly IRepository<Department> _dep;
 
-        public UsersController(IRepository<User> userRepository, ILogger<UsersController> logger, IUserService userService , IRepository<Department> dep)
+        private readonly IUserEnrollments<UserEnrollments> _userEnrollmentsService;
+
+        public UsersController(IRepository<User> userRepository, ILogger<UsersController> logger, IUserService userService , IRepository<Department> dep ,IUserEnrollments<UserEnrollments> userEnrollmentsService)
         {
-            _dep = dep;
             _userRepository = userRepository;
             _logger = logger;
             _userService = userService;
+            _dep = dep;
+            _userEnrollmentsService = userEnrollmentsService;
         }
+       
 
         [HttpGet("all")]
         [EnableRateLimiting("FixedWindowPolicy")]
@@ -74,6 +79,26 @@ namespace CollageMangmentSystem.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error getting user with ID {id}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpGet("{id}/enrollments")]
+        [EnableRateLimiting("FixedWindowPolicy")]
+        public async Task<IActionResult> GetUserEnrollments(Guid id)
+        {
+            try
+            {
+                var user = await _userRepository.GetByIdAsync(id);
+                if (user == null)
+                    return NotFound($"User with ID {id} not found");
+
+                var enrollments = await _userEnrollmentsService.GetUserEnrollmentById(id);
+                return Ok(enrollments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting enrollments for user with ID {id}");
                 return StatusCode(500, "Internal server error");
             }
         }

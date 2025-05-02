@@ -13,6 +13,7 @@ using CollageManagementSystem.Middleware;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using CollageMangmentSystem.Core.Entities.course;
+using CollageManagementSystem.Core.Entities.userEnrollments;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddTransient<AuthorizationMiddleware>(provider =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IDepRepostaory<>), typeof(DepRepostaory<>));
 builder.Services.AddScoped(typeof(ICourseReposatory<>), typeof(CourseReposatory<>));
+builder.Services.AddScoped(typeof(IUserEnrollments<>), typeof(UserEnrollmentsRepostaory<>));
 
 // Configure cookie policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
