@@ -1,5 +1,6 @@
 using CollageMangmentSystem.Core.DTO.Responses.course;
 using CollageMangmentSystem.Core.Entities.department;
+using Core.Entities.Quizzes;
 using System.ComponentModel.DataAnnotations;
 
 namespace CollageMangmentSystem.Core.Entities.course
@@ -19,7 +20,6 @@ namespace CollageMangmentSystem.Core.Entities.course
 
         public Guid? DepartmentId { get; set; }
         public Department? Department { get; set; }
-
         public bool IsOpen { get; set; } = false;
 
         public List<Guid> PrerequisiteCourseIds { get; set; } = new List<Guid>();

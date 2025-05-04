@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using CollageMangmentSystem.Core.Entities.course;
 using CollageManagementSystem.Core.Entities.userEnrollments;
 using CollageMangmentSystem.Infrastructure.Middlewares;
+using CollageManagementSystem.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +37,8 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IDepRepostaory<>), typeof(DepRepostaory<>));
 builder.Services.AddScoped(typeof(ICourseReposatory<>), typeof(CourseReposatory<>));
 builder.Services.AddScoped(typeof(IUserEnrollments<>), typeof(UserEnrollmentsRepostaory<>));
-builder.Services.AddScoped(typeof(IAdminReposatory), typeof(AdminReposatory));
+builder.Services.AddScoped<IAdminReposatory, AdminReposatory>();
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 
 // Configure cookie policy
 builder.Services.Configure<CookiePolicyOptions>(options =>

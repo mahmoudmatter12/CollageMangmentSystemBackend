@@ -6,6 +6,7 @@ using CollageMangmentSystem.Core.Entities.course;
 using CollageMangmentSystem.Core.Entities.department;
 using System.Linq.Expressions;
 using CollageManagementSystem.Core.Entities.userEnrollments;
+using Core.Entities.Quizzes;
 
 namespace CollageMangmentSystem.Infrastructure.Data
 {
@@ -26,6 +27,8 @@ namespace CollageMangmentSystem.Infrastructure.Data
         public DbSet<Course> Courses { get; set; }
 
         public DbSet<UserEnrollments> UserEnrollments { get; set; }
+        public DbSet<Quiz> Quizzes { get; set; }
+        public DbSet<QuizQuestion> QuizQuestions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -51,6 +54,15 @@ namespace CollageMangmentSystem.Infrastructure.Data
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+
+            modelBuilder.Entity<Quiz>()
+                        .OwnsMany(q => q.Questions, b =>
+                    {
+                        b.WithOwner().HasForeignKey("QuizId");
+                        b.Property<Guid>("Id");
+                        b.HasKey("Id");
+                    });
+
 
             // Soft delete query filter (applies to all entities inheriting from BaseEntity)
             foreach (var entityType in modelBuilder.Model.GetEntityTypes()

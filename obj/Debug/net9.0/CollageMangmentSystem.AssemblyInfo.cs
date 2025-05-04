@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CollageMangmentSystem")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+605e8ab3adb2878c20dbe69109c67fb088f58b40")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c6a6b0389d9e8a8c886c1e4609f979644aabd28d")]
 [assembly: System.Reflection.AssemblyProductAttribute("CollageMangmentSystem")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CollageMangmentSystem")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
