@@ -89,7 +89,7 @@ namespace CollageMangmentSystem.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("DepartmentId")
+                    b.Property<Guid?>("DepartmentId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Email")
@@ -215,7 +215,7 @@ namespace CollageMangmentSystem.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("HDDID")
+                    b.Property<Guid?>("HDDID")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsDeleted")
@@ -264,9 +264,7 @@ namespace CollageMangmentSystem.Migrations
                 {
                     b.HasOne("CollageMangmentSystem.Core.Entities.department.Department", "Department")
                         .WithMany()
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DepartmentId");
 
                     b.Navigation("Department");
                 });
@@ -289,8 +287,7 @@ namespace CollageMangmentSystem.Migrations
                     b.HasOne("CollageMangmentSystem.Core.Entities.User", "HDD")
                         .WithMany()
                         .HasForeignKey("HDDID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("HDD");
                 });

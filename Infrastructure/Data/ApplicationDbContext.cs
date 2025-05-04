@@ -32,12 +32,20 @@ namespace CollageMangmentSystem.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
 
             // Configure Department-HDD relationship
+            // Configure Department-HDD relationship
             modelBuilder.Entity<Department>()
                 .HasOne(d => d.HDD)
                 .WithMany()
                 .HasForeignKey(d => d.HDDID)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false); // Make FK optional
 
+            // Configure User-Department relationship
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Department)
+                .WithMany()
+                .HasForeignKey(u => u.DepartmentId)
+                .IsRequired(false); // Make FK optional
 
             // Configure unique email index
             modelBuilder.Entity<User>()

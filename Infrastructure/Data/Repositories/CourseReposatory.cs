@@ -102,5 +102,14 @@ namespace CollageMangmentSystem.Infrastructure.Data.Repositories
 
             return courseName ?? string.Empty;
         }
+
+        public async Task<List<Course>> GetAllCoursers()
+        {
+            var courses = await _context.Courses
+                .Include(c => c.Department)
+                .ToListAsync();
+
+            return courses;
+        }
     }
 }

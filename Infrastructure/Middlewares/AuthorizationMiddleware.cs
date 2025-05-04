@@ -57,7 +57,13 @@ public class AuthorizationMiddleware
 
     private bool ShouldSkipAuthorization(HttpContext context)
     {
-        return context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/swagger");
+        var referer = context.Request.Headers["Referer"].ToString();
+        var userAgent = context.Request.Headers["User-Agent"].ToString();
+
+        return context.Request.Path.StartsWithSegments("/api/auth") ||
+               context.Request.Path.StartsWithSegments("/swagger") ||
+               (!string.IsNullOrEmpty(referer) && referer.Contains("/swagger")) ||
+               (!string.IsNullOrEmpty(userAgent) && userAgent.Contains("Swagger", StringComparison.OrdinalIgnoreCase));
     }
 
     private Guid GetUserIdFromClaims(ClaimsPrincipal user)

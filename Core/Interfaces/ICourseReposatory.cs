@@ -8,5 +8,7 @@ namespace CollageMangmentSystem.Core.Interfaces
         Task<List<string>> GetCourseNamesByIds(List<Guid> courseIds);
         Task<string> GetCourseNameById(Guid courseId);
 
+        Task<List<Course>> GetAllCoursers();
+
     }
 }

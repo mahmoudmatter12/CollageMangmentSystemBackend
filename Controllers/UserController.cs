@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using CollageManagementSystem.Core.Entities.userEnrollments;
 using CollageManagementSystem.Services;
+using CollageMangmentSystem.Core.DTO.Requests;
 using CollageMangmentSystem.Core.DTO.Responses;
 using CollageMangmentSystem.Core.DTO.Responses.user;
 using CollageMangmentSystem.Core.Entities;
@@ -76,7 +77,7 @@ namespace CollageMangmentSystem.Controllers
                 if (user == null)
                     return NotFound();
                 var userDto = user.ToGetStudentIdResponseDto();
-                userDto.DepName = GetDepNameFromId(user.DepartmentId);
+                userDto.DepName = GetDepNameFromId(user.DepartmentId ?? Guid.Empty);
                 return Ok(userDto);
                 
             }
@@ -126,10 +127,11 @@ namespace CollageMangmentSystem.Controllers
             {
 
                 var user = await _userRepository.GetByIdAsync(id);
+                var userId = GetUserIdFromClaims();
                 if (user == null)
                     return NotFound($"User with ID {id} not found");
 
-                await _userRepository.DeleteAsync(user);
+                await _userRepository.SoftDeleteAsync(user , userId);
 
                 return Ok("User deleted successfully");
             }
@@ -148,6 +150,36 @@ namespace CollageMangmentSystem.Controllers
             var userId = GetUserIdFromClaims();
             var UserRole = await _userService.GetRoleByUserId(userId);
             return Ok(new { message = "This is a protected route", userId, UserRole });
+        }
+
+        [HttpPatch("{id:guid}/update")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto user)
+        {
+            try
+            {
+                var existingUser = await _userRepository.GetByIdAsync(id);
+                if (existingUser == null)
+                    return NotFound($"User with ID {id} not found");
+
+                existingUser.FullName = user.FullName ?? existingUser.FullName;
+                existingUser.Email = user.Email ?? existingUser.Email;
+                existingUser.DepartmentId = user.DepartmentId != null ? Guid.Parse(user.DepartmentId) : existingUser.DepartmentId;
+
+                
+
+                await _userRepository.UpdateAsync(existingUser);
+
+                return Ok(new {
+                    message = "User updated successfully",
+                    existingUser,
+                    depId = user.DepartmentId, // this from the [formBody]
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating user with ID {id}");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
 

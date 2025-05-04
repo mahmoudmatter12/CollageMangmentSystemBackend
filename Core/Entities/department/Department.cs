@@ -7,7 +7,7 @@ namespace CollageMangmentSystem.Core.Entities.department
         public int StudentCount { get; set; }
         public string Name { get; set; } = string.Empty;
 
-        public required Guid HDDID { get; set; }
+        public Guid? HDDID { get; set; }
         public User? HDD { get; set; }
 
         public DepResponseDto ToDepResponseDto()

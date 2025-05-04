@@ -5,6 +5,7 @@ using CollageMangmentSystem.Core.DTO.Responses.user;
 using CollageMangmentSystem.Core.Entities.course;
 using CollageMangmentSystem.Core.Entities.department;
 using CollageMangmentSystem.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -43,8 +44,9 @@ namespace CollageMangmentSystem.Controllers
         // paged
         [HttpGet("all")]
         [EnableRateLimiting("FixedWindowPolicy")]
+        [Authorize(Roles = "Admin,Student")] // this is available for admin and student
         public async Task<IActionResult> GetAllCourses([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
-        {   
+        {
             var TotalCount = await _CourseRepo.GetCountAsync();
             var courses = await _CourseRepo.GetAllAsyncPaged(pageNumber, pageSize);
             var courseDtos = courses.Select(c => c.ToCourseResponseDto()).ToList();
@@ -53,7 +55,8 @@ namespace CollageMangmentSystem.Controllers
                 courseDto.DepName = await _depRepo.GetDepartmentName(courseDto.DepartmentId);
                 courseDto.PrerequisiteCourses = await _courseReposatory.GetCourseNamesByIds(courseDto.PrerequisiteCourseIds);
             }
-            return Ok(new PagedResponse<courseResponseDto>{
+            return Ok(new PagedResponse<courseResponseDto>
+            {
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 TotalCount = TotalCount,

@@ -60,7 +60,7 @@ namespace CollageMangmentSystem.Controllers
             {
                 return NotFound("Department not found");
             }
-            var hddName = await _tokenService.GetUserById(department.HDDID);
+            var hddName = await _tokenService.GetUserById(department.HDDID ?? Guid.Empty);
             return Ok(new DepResponseDto
             {
                 Id = department.Id,

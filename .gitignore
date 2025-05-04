@@ -1,1 +1,9 @@
 *.todo
+Migrations/
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.sublime-settings
+*.sublime-metrics
+*.sql

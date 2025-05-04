@@ -19,8 +19,7 @@ namespace CollageManagementSystem.DTOs.Requests.Auth
         [Required]
         public string FullName { get; set; } = string.Empty;
 
-        [Required]
-        public Guid DepartmentId { get; set; }
+        public Guid? DepartmentId { get; set; }
 
     }
 }

@@ -4,6 +4,8 @@ using CollageManagementSystem.Models;
 using CollageManagementSystem.Services;
 using CollageManagementSystem.Services.Auth;
 using CollageMangmentSystem.Core.Entities;
+using CollageMangmentSystem.Core.Entities.department;
+using CollageMangmentSystem.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
@@ -19,14 +21,19 @@ namespace CollageMangmentSystem.Controllers
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
 
+        private readonly IDepRepostaory<Department> _depRepostaory;
+
         public AuthController(
             ITokenService tokenService,
             IUserService userService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IDepRepostaory<Department> depRepostaory
+            )
         {
             _tokenService = tokenService;
             _userService = userService;
             _configuration = configuration;
+            _depRepostaory = depRepostaory;
         }
 
         [HttpPost("register")]
@@ -49,7 +56,6 @@ namespace CollageMangmentSystem.Controllers
                 PasswordSalt = passwordSalt,
                 FullName = registerDto.FullName ?? string.Empty,
                 DepartmentId = registerDto.DepartmentId,
-                
             };
 
             // Save user
@@ -63,16 +69,19 @@ namespace CollageMangmentSystem.Controllers
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7); // Refresh token valid for 7 days
             await _userService.UpdateUser(user);
+            var depNamee = _depRepostaory.GetByIdAsync(registerDto.DepartmentId ?? Guid.Empty);
 
             return Ok(new AuthResponseDto
             {
                 UserId = user.Id,
                 Email = user.Email,
+                DepartmentName = depNamee?.Result?.Name ?? string.Empty,
                 FullName = user.FullName,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 Role = user.GetRoleByIndex((int)user.Role),
                 AccessTokenExpiry = DateTime.UtcNow.AddHours(1),
+                DepartmentId = user.DepartmentId,
             });
         }
 

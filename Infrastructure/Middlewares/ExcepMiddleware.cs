@@ -1,51 +1,46 @@
 using System.Net;
 using System.Text.Json;
 
-public class GlobalExceptionMiddleware
+namespace CollageMangmentSystem.Infrastructure.Middlewares
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<GlobalExceptionMiddleware> _logger;
-
-    public GlobalExceptionMiddleware(
-        RequestDelegate next,
-        ILogger<GlobalExceptionMiddleware> logger)
+    public class GlobalExceptionMiddleware
     {
-        _next = next;
-        _logger = logger;
-    }
+        private readonly RequestDelegate _next;
+        private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
-    public async Task InvokeAsync(HttpContext context)
-    {
-        try
+        public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
         {
-            await _next(context);
+            _next = next;
+            _logger = logger;
         }
-        catch (Exception ex)
+
+        public async Task Invoke(HttpContext context)
         {
-            _logger.LogError(ex, ex.Message);
-            await HandleExceptionAsync(context, ex);
+            try
+            {
+                await _next(context); // continue to next middleware
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception occurred");
+                await HandleExceptionAsync(context, ex);
+            }
         }
-    }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
-    {
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-        var response = new
+        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            StatusCode = context.Response.StatusCode,
-            Message = "An internal server error occurred",
-            Detailed = exception.Message,
-            StackTrace = exception.StackTrace
-        };
+            var response = new
+            {
+                status = 500,
+                message = "An unexpected error occurred from the middleware",
+                detail = exception.Message 
+            };
 
-        var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        });
+            var result = JsonSerializer.Serialize(response);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-        await context.Response.WriteAsync(json);
+            return context.Response.WriteAsync(result);
+        }
     }
 }

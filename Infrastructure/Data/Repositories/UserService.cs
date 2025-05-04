@@ -71,6 +71,11 @@ namespace CollageManagementSystem.Services
             }
         }
 
+        public async Task<IEnumerable<User>> GetAllUsers()
+        {
+            return await _context.Users.ToListAsync();
+        }
+
         public async Task<List<User>> GetUsersByDepartmentId(Guid departmentId)
         {
             return await _context.Users
@@ -138,5 +143,6 @@ namespace CollageManagementSystem.Services
             }
             return user.FullName;
         }
+
     }
 }

@@ -12,26 +12,33 @@ namespace CollageManagementSystem.Middleware
     public class JwtAuthenticationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IConfiguration? _configuration;
         private readonly ITokenService? _tokenService;
+        private readonly IWebHostEnvironment _env;
 
-        public JwtAuthenticationMiddleware(RequestDelegate next, IConfiguration configuration, ITokenService tokenService)
+
+        public JwtAuthenticationMiddleware(RequestDelegate next, IConfiguration configuration, ITokenService tokenService, IWebHostEnvironment env)
         {
             _next = next;
-            _configuration = configuration;
             _tokenService = tokenService;
+            _env = env;
         }
-        
+
+
         public async Task Invoke(HttpContext context)
         {
             // Skip authentication for auth endpoints and swagger
+            var referer = context.Request.Headers["Referer"].ToString();
+            var userAgent = context.Request.Headers["User-Agent"].ToString();
+
             if (context.Request.Path.StartsWithSegments("/api/auth") ||
-                context.Request.Path.StartsWithSegments("/swagger")
-                )
+                context.Request.Path.StartsWithSegments("/swagger") ||
+                (!string.IsNullOrEmpty(referer) && referer.Contains("/swagger")) ||
+                (!string.IsNullOrEmpty(userAgent) && userAgent.Contains("Swagger", StringComparison.OrdinalIgnoreCase)))
             {
                 await _next(context);
                 return;
             }
+
 
             // Try to get token from cookie first
             var token = context.Request.Cookies["accessToken"];
@@ -49,6 +56,9 @@ namespace CollageManagementSystem.Middleware
             if (string.IsNullOrEmpty(token))
             {
                 context.Response.StatusCode = 401;
+                // Console.WriteLine("Skipping authentication for auth endpoints and swagger.");
+                Console.WriteLine(context.Request.Path);
+
                 await context.Response.WriteAsync("No token provided login first");
                 return;
             }

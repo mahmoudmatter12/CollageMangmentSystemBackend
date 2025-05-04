@@ -10,7 +10,8 @@ namespace CollageManagementSystem.DTOs.Responses.Auth
         public string AccessToken { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
         public DateTime AccessTokenExpiry { get; set; }
-
+        public Guid? DepartmentId { get; set; }
         public string? Role { get; set; }
+        public string? DepartmentName { get; set; }
     }
 }

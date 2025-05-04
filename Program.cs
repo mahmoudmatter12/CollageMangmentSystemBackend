@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using CollageMangmentSystem.Core.Entities.course;
 using CollageManagementSystem.Core.Entities.userEnrollments;
+using CollageMangmentSystem.Infrastructure.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IDepRepostaory<>), typeof(DepRepostaory<>));
 builder.Services.AddScoped(typeof(ICourseReposatory<>), typeof(CourseReposatory<>));
 builder.Services.AddScoped(typeof(IUserEnrollments<>), typeof(UserEnrollmentsRepostaory<>));
+builder.Services.AddScoped(typeof(IAdminReposatory), typeof(AdminReposatory));
 
 // Configure cookie policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -134,6 +136,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/swagger"))
+    {
+        await next(context);
+        return;
+    }
+
+    await next(context); // Proceed to the next middleware
+});
 
 app.UseHttpsRedirection();
 
@@ -145,21 +157,25 @@ app.UseCookiePolicy(new CookiePolicyOptions
 });
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
 // Use middleware with factory approach
 app.Use(async (context, next) =>
 {
+    if (context.Request.Path.StartsWithSegments("/api/auth") || context.Request.Path.StartsWithSegments("/swagger"))
+    {
+        await next(context);
+        return;
+    }
     var tokenService = context.RequestServices.GetRequiredService<ITokenService>();
     var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
+    var env = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
-    var middleware = new JwtAuthenticationMiddleware(next, configuration, tokenService);
+    var middleware = new JwtAuthenticationMiddleware(next, configuration, tokenService, env);
     await middleware.Invoke(context);
 });
-app.UseMiddleware<AuthorizationMiddleware>(); // Role-based authorization
 app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<AuthorizationMiddleware>(); // Role-based authorization
 app.MapControllers();
 
 app.Run();

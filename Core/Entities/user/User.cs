@@ -38,7 +38,7 @@ namespace CollageMangmentSystem.Core.Entities
         }
 
         // each user user can be in only one department
-        public required Guid DepartmentId { get; set; }
+        public Guid? DepartmentId { get; set; }
         public Department? Department { get; set; }
 
         public GetUserIdResponseDto ToGetStudentIdResponseDto() => new()
@@ -48,8 +48,8 @@ namespace CollageMangmentSystem.Core.Entities
             Email = Email,
             Role = Role.ToString(),
             CreatedAt = CreatedAt,
-            DepId = DepartmentId,
-            DepName = Department?.Name
+            DepId = DepartmentId ?? Guid.Empty,
+            DepName = Department?.Name 
         };
 
 

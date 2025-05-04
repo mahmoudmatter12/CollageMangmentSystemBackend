@@ -13,5 +13,7 @@ namespace CollageMangmentSystem.Core.DTO.Requests
         [MaxLength(255, ErrorMessage = "Email cannot exceed 255 characters")]
         public string? Email { get; set; }
 
+        public string? DepartmentId { get; set; }
+
     }
 }
