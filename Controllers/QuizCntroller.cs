@@ -10,12 +10,15 @@ namespace CollageManagementSystem
     [Route("api/[controller]")]
     public class QuizController : ControllerBase
     {
+        // Dependency Injection
         private readonly IQuizRepository _quizRepository;
-
+        // Constructor
         public QuizController(IQuizRepository quizRepository)
         {
             _quizRepository = quizRepository;
         }
+        // Todo: Add authorization to all endpoints
+        // todo: add pagination to all endpoints
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetQuiz(Guid id)
@@ -29,20 +32,28 @@ namespace CollageManagementSystem
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            var quizzes = await _quizRepository.GetQuizzesWithQuestionsAsync();
+            if (quizzes == null || !quizzes.Any())
+                return NotFound("No quizzes found.");
+            foreach (var quiz in quizzes)
+            {
+                quiz.Questions = quiz.Questions.OrderBy(q => q.QuestionText).ToList();
+            }
+            quizzes = quizzes.OrderBy(q => q.Title).ToList();
+            return Ok(quizzes);
+        }
+
+        [HttpGet("metaData")]
+        public async Task<IActionResult> GetAllMetaData()
+        {
             var quizzes = await _quizRepository.GetAllQuizzesAsync();
-            // var questions = await _quizRepository.GetAllQuestionsAsync();
-            // var quizDtos = quizzes.Select(q => new
-            // {
-            //     Id = q.Id,
-            //     Title = q.Title,
-            //     Description = q.Description,
-            //     Questions = questions.Where(qs => qs.QuizId == q.Id).Select(qs => new QuizQuestionDto
-            //     {
-            //         QuestionText = qs.QuestionText,
-            //         Answers = qs.Answers,
-            //         CorrectAnswerIndex = qs.CorrectAnswerIndex
-            //     }).ToList()
-            // }).ToList();
+            if (quizzes == null || !quizzes.Any())
+                return NotFound("No quizzes found.");
+            foreach (var quiz in quizzes)
+            {
+                quiz.Questions = quiz.Questions.OrderBy(q => q.QuestionText).ToList();
+            }
+            quizzes = quizzes.OrderBy(q => q.Title).ToList();
             return Ok(quizzes);
         }
 

@@ -14,6 +14,8 @@ namespace CollageManagementSystem.Core
         Task<IEnumerable<QuizQuestion>> GetAllQuestionsAsync(Guid QuizID);
 
         Task<IEnumerable<QuizWithQuestionsResponseDto>> GetQuizWithQuestionsAsync(Guid quizId);
+
+        Task<IEnumerable<QuizWithQuestionsResponseDto>> GetQuizzesWithQuestionsAsync();
     }
 
 }

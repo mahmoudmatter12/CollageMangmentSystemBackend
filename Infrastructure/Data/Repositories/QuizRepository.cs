@@ -136,6 +136,37 @@ namespace CollageMangmentSystem.Infrastructure.Data.Repositories
 
             return new List<QuizWithQuestionsResponseDto> { quizDto };
         }
+
+        public async Task<IEnumerable<QuizWithQuestionsResponseDto>> GetQuizzesWithQuestionsAsync()
+        {
+            var quizzes = await _context.Quizzes
+                .Include(q => q.Questions)
+                .ToListAsync();
+
+            var quizDtos = quizzes.Select(quiz => new QuizWithQuestionsResponseDto
+            {
+                Id = quiz.Id,
+                Title = quiz.Title,
+                Description = quiz.Description ?? "No Description",
+                Duration = quiz.Duration,
+                PassingMarks = quiz.PassingMarks,
+                IsActive = quiz.IsActive,
+                StartDate = quiz.StartDate ?? DateTime.MinValue,
+                EndDate = quiz.EndDate ?? DateTime.MinValue,
+                TotalMarks = quiz.Questions.Sum(q => q.Marks),
+                TotalQuestions = quiz.Questions.Count,
+                Questions = quiz.Questions.Select(q => new QuizQuestionResponseDto
+                {
+                    QuestionText = q.QuestionText,
+                    Type = q.Type,
+                    Marks = q.Marks,
+                    Answers = q.Answers,
+                    CorrectAnswerIndex = q.CorrectAnswerIndex
+                }).ToList()
+            });
+
+            return quizDtos.ToList();
+        }
     }
 
 }
