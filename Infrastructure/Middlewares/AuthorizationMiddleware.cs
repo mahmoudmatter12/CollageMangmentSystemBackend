@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using CollageManagementSystem.Services;
-using Microsoft.AspNetCore.Authorization;
 
 public class AuthorizationMiddleware
 {

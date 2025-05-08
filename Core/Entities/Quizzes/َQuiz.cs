@@ -1,3 +1,4 @@
+using CollageMangmentSystem.Core.DTO.Requests.quiz;
 using CollageMangmentSystem.Core.Entities;
 
 namespace Core.Entities.Quizzes
@@ -10,16 +11,10 @@ namespace Core.Entities.Quizzes
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public int Duration { get; set; } // in minutes
-        public int PassingMarks { get; set; } = 50;
-        public bool IsActive { get; set; } = false;
-        public int? MaxAttempts { get; set; } = null; // use null instead of 0 if "unlimited" is implied
-
+        public int PassingMarks { get; set; }
+        public bool IsActive { get; set; }
+        public int? MaxAttempts { get; set; }
         public ICollection<QuizQuestion> Questions { get; set; } = new List<QuizQuestion>();
-
-        public int GetTotalMarks()
-        {
-            return this.Questions.Sum(q => q.Marks);
-        }
 
         public string GetDurationString()
         {
@@ -32,6 +27,34 @@ namespace Core.Entities.Quizzes
         }
 
 
+        public Quiz CreateQuizDto(CreateQuizDto quiz)
+        {
+            var newQuiz = new Quiz
+            {
+                Title = quiz.Title,
+                Description = quiz.Description,
+                StartDate = quiz.StartDate,
+                EndDate = quiz.EndDate,
+                Duration = quiz.Duration,
+                PassingMarks = quiz.PassingMarks,
+                IsActive = quiz.IsActive,
+                MaxAttempts = quiz.MaxAttempts,
+                Questions = quiz.Questions.Select(q => new QuizQuestion
+                {
+                    QuestionText = q.QuestionText,
+                    Type = q.Type,
+                    Answers = q.Answers,
+                    Marks = q.Marks,
+                    CorrectAnswerIndex = q.CorrectAnswerIndex,
+                    Hint = q.Hint,
+                    Explanation = q.Explanation,
+                    ImageUrl = q.ImageUrl,
+                    Tags = q.Tags ?? new List<string>(),
+                }).ToList()
+            };
+
+            return newQuiz;
+        }
     }
 
 

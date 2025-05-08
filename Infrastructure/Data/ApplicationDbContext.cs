@@ -35,58 +35,50 @@ namespace CollageMangmentSystem.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
 
             // Configure Department-HDD relationship
-            // Configure Department-HDD relationship
             modelBuilder.Entity<Department>()
-                .HasOne(d => d.HDD)
-                .WithMany()
-                .HasForeignKey(d => d.HDDID)
-                .OnDelete(DeleteBehavior.Restrict)
-                .IsRequired(false); // Make FK optional
+            .HasOne(d => d.HDD)
+            .WithMany()
+            .HasForeignKey(d => d.HDDID)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
 
             // Configure User-Department relationship
             modelBuilder.Entity<User>()
-                .HasOne(u => u.Department)
-                .WithMany()
-                .HasForeignKey(u => u.DepartmentId)
-                .IsRequired(false); // Make FK optional
+            .HasOne(u => u.Department)
+            .WithMany()
+            .HasForeignKey(u => u.DepartmentId)
+            .IsRequired(false);
 
-            // Configure unique email index
+            // Unique email
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+            .HasIndex(u => u.Email)
+            .IsUnique();
 
-            modelBuilder.Entity<Quiz>()
-                        .OwnsMany(q => q.Questions, b =>
-                    {
-                        b.WithOwner().HasForeignKey("QuizId");
-                        b.Property<Guid>("Id");
-                        b.HasKey("Id");
-                    });
+            // Quiz–QuizQuestion relationship
+            modelBuilder.Entity<QuizQuestion>()
+            .HasOne(q => q.Quiz)
+            .WithMany(qz => qz.Questions)
+            .HasForeignKey(q => q.QuizId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(false);
 
-
-            // Soft delete query filter (applies to all entities inheriting from BaseEntity)
+            // Soft delete global filter
             foreach (var entityType in modelBuilder.Model.GetEntityTypes()
-                .Where(e => typeof(BaseEntity).IsAssignableFrom(e.ClrType)))
+            .Where(e => typeof(BaseEntity).IsAssignableFrom(e.ClrType)))
             {
-                // Create a parameter expression
-                var parameter = Expression.Parameter(entityType.ClrType, "e");
+                if (modelBuilder.Entity(entityType.ClrType).Metadata.GetQueryFilter() == null)
+                {
+                    var parameter = Expression.Parameter(entityType.ClrType, "e");
+                    var property = Expression.Property(parameter, "IsDeleted");
+                    var falseConstant = Expression.Constant(false);
+                    var equalExpression = Expression.Equal(property, falseConstant);
+                    var lambda = Expression.Lambda(equalExpression, parameter);
 
-                // Create property access expression
-                var property = Expression.Property(parameter, "IsDeleted");
-
-                // Create constant expression for false
-                var falseConstant = Expression.Constant(false);
-
-                // Create equality expression
-                var equalExpression = Expression.Equal(property, falseConstant);
-
-                // Create lambda expression
-                var lambda = Expression.Lambda(equalExpression, parameter);
-
-                // Apply the filter
-                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                    modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                }
             }
         }
+
 
         public override int SaveChanges()
         {

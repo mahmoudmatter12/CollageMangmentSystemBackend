@@ -37,7 +37,7 @@ namespace CollageMangmentSystem.Controllers
             _userEnrollmentsService = userEnrollmentsService;
             _courseReposatory = courseReposatory;
         }
-       
+    
 
         [HttpGet("all")]
         [EnableRateLimiting("FixedWindowPolicy")]

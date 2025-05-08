@@ -10,7 +10,7 @@ public static class QuizValidator
             return false;
         }
 
-        if (quiz.Questions == null || !quiz.Questions.Any())
+        if (quiz.Questions == null || quiz.Questions.Count == 0)
         {
             error = "Quiz must contain at least one question.";
             return false;

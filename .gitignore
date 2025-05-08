@@ -7,3 +7,9 @@ Migrations/
 *.sublime-settings
 *.sublime-metrics
 *.sql
+/bin/
+.config
+obj
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json

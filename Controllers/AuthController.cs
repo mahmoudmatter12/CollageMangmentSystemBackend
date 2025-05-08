@@ -162,6 +162,7 @@ namespace CollageMangmentSystem.Controllers
             {
                 return BadRequest("Invalid refresh token");
             }
+    
 
             user.RefreshToken = null;
             user.RefreshTokenExpiry = null;

@@ -150,3 +150,10 @@
 /home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 /home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Microsoft.IdentityModel.Tokens.dll
 /home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Castle.Core.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/Moq.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/xunit.abstractions.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/xunit.assert.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/xunit.core.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/xunit.execution.dotnet.dll
+/home/mahmoud/Projects/depiBackEnd/CollageMangmentSystem/bin/Debug/net9.0/runtimes/win/lib/net6.0/System.Diagnostics.EventLog.Messages.dll

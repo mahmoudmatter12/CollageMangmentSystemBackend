@@ -1,15 +1,17 @@
 using Core.Entities.Quizzes;
 
-public class QuizQuestionDto
+public class QuizQuestionResponseDto
 {
-    public required string QuestionText { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+
     public QuestionType Type { get; set; }
+
     public List<string> Answers { get; set; } = new();
-    public int Marks { get; set; }
     public int CorrectAnswerIndex { get; set; }
+
+    public int Marks { get; set; } = 1;
     public string? Hint { get; set; }
     public string? Explanation { get; set; }
     public string? ImageUrl { get; set; }
-    public List<string>? Tags { get; set; } = new();
-
+    public List<string> Tags { get; set; } = new();
 }

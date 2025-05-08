@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace Core.Entities.Quizzes
 {
+    [Owned]
     public class QuizQuestion
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -9,11 +12,17 @@ namespace Core.Entities.Quizzes
         public required List<string> Answers { get; set; } = new();
         public int CorrectAnswerIndex { get; set; }
 
-        public int Marks { get; set; } = 1;
+        public int Marks { get; set; }
         public string? Hint { get; set; }
         public string? Explanation { get; set; }
         public string? ImageUrl { get; set; }
         public List<string> Tags { get; set; } = new();
+
+        // Foreign Key
+        public Guid QuizId { get; set; }
+
+        // Navigation Property
+        public Quiz? Quiz { get; set; }
 
         public bool IsValid()
         {
